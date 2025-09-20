@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Guidance Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .skill-bar {
+            width: 100%;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .skill-bar-fill {
+            background-color: #8b5cf6;
+            height: 10px;
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out;
+        }
+        .question-card {
+            background-color: #fff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 50rem;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        .option-btn {
+            background-color: #ffffff;
+            color: #4a5568;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .option-btn:hover {
+            background-color: #ede9fe;
+            transform: scale(1.02);
+        }
+        .alert-box {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #fca5a5;
+            color: #b91c1c;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .alert-box.visible {
+            opacity: 1;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 bg-gray-100">
+
+    <!-- Custom Alert Box -->
+    <div id="custom-alert" class="alert-box">
+        <p id="custom-alert-message" class="font-semibold"></p>
+    </div>
+
+    <div id="landing-page" class="bg-white rounded-3xl shadow-2xl p-8 max-w-xl w-full text-center transition-all duration-500 ease-in-out">
+        <h1 class="text-4xl font-bold mb-4 text-purple-700">Career Guidance Quiz</h1>
+        <p class="text-lg text-gray-700 mb-8">
+            Find out your skills and learn which career is best for you. This quiz will test your abilities, from critical thinking to creative thinking.
+        </p>
+        <button id="start-quiz-btn" class="bg-purple-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-purple-700 transform hover:scale-105 transition duration-300">
+            Start Quiz
+        </button>
+    </div>
+
+    <div id="quiz-page" class="hidden flex-col items-center justify-center">
+        <div class="question-card">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800" id="quiz-title"></h2>
+            <div class="mb-6">
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-purple-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                </div>
+                <p id="question-counter" class="text-sm text-gray-500 mt-2"></p>
+            </div>
+            <p class="text-xl font-medium mb-6 text-gray-800" id="question-text"></p>
+            <div id="options-container" class="grid grid-cols-1 gap-4">
+                <!-- Options will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Skill Results Page -->
+    <div id="skill-results-page" class="hidden bg-white rounded-3xl shadow-2xl p-8 max-w-xl w-full text-center transition-all duration-500 ease-in-out">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Your Quiz Results</h2>
+        <p class="text-md text-gray-600 mb-6">Here is your performance based on your skills.</p>
+        <div id="skill-list" class="space-y-4">
+            <!-- Skill bars will be dynamically added here -->
+        </div>
+        <button id="continue-to-marks-btn" class="mt-8 w-full bg-purple-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-purple-700 transform hover:scale-105 transition duration-300">
+            Continue
+        </button>
+    </div>
+
+    <!-- Page for Marks & Exam Input -->
+    <div id="marks-page" class="hidden bg-white rounded-3xl shadow-2xl p-8 max-w-xl w-full transition-all duration-500 ease-in-out">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Enter Your Class 12th Details</h2>
+        
+        <div class="mb-6 text-left">
+            <label for="stream-select" class="block text-gray-700 font-medium mb-2">Choose Your Stream</label>
+            <select id="stream-select" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="">-- Select a Stream --</option>
+                <option value="pcm">PCM (Physics, Chemistry, Maths)</option>
+                <option value="pcb">PCB (Physics, Chemistry, Biology)</option>
+                <option value="commerce">Commerce</option>
+                <option value="humanities">Humanities / Arts</option>
+            </select>
+        </div>
+
+        <div id="marks-input-container" class="space-y-4">
+            <!-- Marks input fields will be added dynamically based on stream selection -->
+        </div>
+
+        <div class="mt-8 space-y-4">
+            <label for="exam-select" class="block text-gray-700 font-medium mb-2">Have you taken any competitive exams?</label>
+            <select id="exam-select" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+            </select>
+        </div>
+
+        <div id="exam-details-container" class="hidden mt-4 space-y-4">
+            <label for="exam-name" class="block text-gray-700 font-medium mb-2">Exam Name</label>
+            <select id="exam-name" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="">-- Select Exam --</option>
+                <option value="jee">JEE Mains / Advanced</option>
+                <option value="neet">NEET</option>
+                <option value="cucet">CUET</option>
+                <option value="cat">CAT</option>
+                <option value="clat">CLAT</option>
+            </select>
+            
+            <label for="exam-score" class="block text-gray-700 font-medium mb-2">Exam Score / Percentile</label>
+            <input type="number" id="exam-score" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter your percentile (e.g., 95)">
+        </div>
+
+        <button id="submit-marks-btn" class="mt-6 w-full bg-purple-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-purple-700 transform hover:scale-105 transition duration-300">
+            Submit Details and View Courses
+        </button>
+    </div>
+
+    <!-- Course Recommendation Page -->
+    <div id="course-page" class="hidden bg-white rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500 ease-in-out">
+        <h2 class="text-4xl font-bold mb-4 text-purple-700 text-center">Recommended Courses</h2>
+        <p class="text-lg text-gray-700 mb-8 text-center">Based on your skills and academic profile, here are some courses you can choose from.</p>
+        <div id="course-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Course cards will be dynamically added here -->
+        </div>
+        <div class="text-center mt-8">
+            <button id="restart-quiz-btn" class="bg-gray-400 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-gray-500 transform hover:scale-105 transition duration-300">
+                Restart Quiz
+            </button>
+        </div>
+    </div>
+    
+    <!-- Final Results Page -->
+    <div id="results-page" class="hidden bg-white rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500 ease-in-out">
+        <h2 class="text-4xl font-bold mb-4 text-purple-700 text-center">College Recommendations</h2>
+        <p class="text-lg text-gray-700 mb-8 text-center">Based on your profile and chosen course, here are some colleges that may be suitable for you.</p>
+
+        <!-- Colleges Section -->
+        <section class="mb-10">
+            <div id="colleges-list" class="p-6 bg-white rounded-xl shadow-2xl grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Top Colleges in Jammu and Kashmir</h4>
+                    <ul id="colleges-jk" class="space-y-3">
+                        <!-- J&K colleges will be listed here -->
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Top Colleges in Other States</h4>
+                    <ul id="colleges-other" class="space-y-3">
+                        <!-- Other colleges will be listed here -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div class="text-center mt-8">
+            <button id="back-to-courses-btn" class="bg-gray-400 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-gray-500 transform hover:scale-105 transition duration-300 mr-4">
+                Back to Courses
+            </button>
+            <button id="restart-quiz-btn-2" class="bg-gray-400 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-gray-500 transform hover:scale-105 transition duration-300">
+                Restart Quiz
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const landingPage = document.getElementById('landing-page');
+            const startQuizBtn = document.getElementById('start-quiz-btn');
+            const quizPage = document.getElementById('quiz-page');
+            const skillResultsPage = document.getElementById('skill-results-page');
+            const marksPage = document.getElementById('marks-page');
+            const coursePage = document.getElementById('course-page');
+            const resultsPage = document.getElementById('results-page');
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const progressBar = document.getElementById('progress-bar');
+            const questionCounter = document.getElementById('question-counter');
+            const streamSelect = document.getElementById('stream-select');
+            const marksInputContainer = document.getElementById('marks-input-container');
+            const examSelect = document.getElementById('exam-select');
+            const examDetailsContainer = document.getElementById('exam-details-container');
+            const submitMarksBtn = document.getElementById('submit-marks-btn');
+            const continueToMarksBtn = document.getElementById('continue-to-marks-btn');
+            const restartQuizBtns = document.querySelectorAll('[id^="restart-quiz-btn"]');
+            const backToCoursesBtn = document.getElementById('back-to-courses-btn');
+            const customAlert = document.getElementById('custom-alert');
+            const customAlertMessage = document.getElementById('custom-alert-message');
+
+            // Quiz State
+            let currentQuestionIndex = 0;
+            const skillScores = {
+                'criticalThinking': 0, 'logicalReasoning': 0, 'analyticalSkills': 0, 'numericalAbility': 0, 'abstractReasoning': 0, 'creativeThinking': 0,
+                'designThinking': 0, 'verbalAbility': 0, 'emotionalIntelligence': 0, 'leadership': 0, 'teamwork': 0
+            };
+            let academicMarks = {};
+            let competitiveExam = null;
+            let currentStream = '';
+            let maxSkillScores = {};
+
+            const questions = [
+                { text: 'You are given a complex problem. What is your first step?', skill: 'criticalThinking', options: ['Solve it instantly using past experience.', 'Break it down into smaller, manageable parts.', 'Find a similar problem solved online.', 'Delegate the problem to a teammate.'], correct: 1 },
+                { text: 'Which word in the following list is not related: Cat, Dog, Tree, Fish?', skill: 'logicalReasoning', options: ['Cat', 'Dog', 'Tree', 'Fish'], correct: 2 },
+                { text: 'A shirt costs ₹800. If there is a 25% discount, what is the final price?', skill: 'numericalAbility', options: ['₹600', '₹700', '₹750', '₹550'], correct: 0 },
+                { text: 'A company\'s sales increased by 10% in Q1 and decreased by 5% in Q2. What is the total change for the first half of the year?', skill: 'analyticalSkills', options: ['+5%', '+4.5%', '+5.5%', 'Cannot be determined'], correct: 2 },
+                { text: 'If you could invent a new household gadget, what would it do?', skill: 'creativeThinking', options: ['A robotic cleaner that also waters plants.', 'An automatic clothes folder and organizer.', 'A smart kitchen appliance that learns your taste.', 'All of the above.'], correct: 3 },
+                { text: 'When designing a product for the elderly, what would be your main priority?', skill: 'designThinking', options: ['Making it look modern.', 'Ensuring it is lightweight and easy to use.', 'Adding as many features as possible.', 'Using bright, vibrant colors.'], correct: 1 },
+                { text: 'Choose the odd one out: A. Car B. Ship C. Aeroplane D. Bus', skill: 'abstractReasoning', options: ['A', 'B', 'C', 'D'], correct: 1 },
+                { text: 'Which word best describes a person who talks a lot?', skill: 'verbalAbility', options: ['Laconic', 'Talkative', 'Reticent', 'Quiet'], correct: 1 },
+                { text: 'A teammate is struggling with a task. What should you do:', skill: 'emotionalIntelligence', options: ['Tell them to work faster.', 'Ignore it and focus on your work.', 'Offer to help them or show them a better way.', 'Report them to the manager.'], correct: 2 },
+                { text: 'A good leader is one who:', skill: 'leadership', options: ['Gives orders and expects them to be followed.', 'Inspires and motivates a team to achieve a common goal.', 'Does all the work themselves to ensure quality.', 'Takes credit for the team\'s successes.'], correct: 1 },
+                { text: 'During a group project, what is your role?', skill: 'teamwork', options: ['Do your part and leave others to theirs.', 'Take responsibility for every aspect of the project.', 'Actively collaborate and support each other\'s work.', 'Wait for others to tell you what to do.'], correct: 2 }
+            ];
+
+            const courses = {
+                'pcm': [
+                    { id: 'btech', name: 'Bachelor of Technology (B.Tech)', desc: 'Focuses on engineering and technology. Ideal for those interested in software, electronics, civil, or mechanical fields.', exam: 'jee', successRate: '85-90%', avgSalary: '₹6-12 LPA' },
+                    { id: 'bsc', name: 'Bachelor of Science (B.Sc)', desc: 'Focuses on fundamental science subjects. Good for a career in research or the scientific field.', exam: 'cucet', successRate: '60-70%', avgSalary: '₹3-6 LPA' },
+                    { id: 'bca', name: 'Bachelor of Computer Applications (BCA)', desc: 'A practical course for those who want to enter the software industry directly. Focuses on programming and applications.', exam: 'cucet', successRate: '75-80%', avgSalary: '₹4-8 LPA' }
+                ],
+                'pcb': [
+                    { id: 'mbbs', name: 'Bachelor of Medicine, Bachelor of Surgery (MBBS)', desc: 'The core professional degree for doctors. A long but highly rewarding career.', exam: 'neet', successRate: '95-100%', avgSalary: '₹8-20+ LPA' },
+                    { id: 'bds', name: 'Bachelor of Dental Surgery (BDS)', desc: 'For those interested in dental and oral health. A respected career in the medical field.', exam: 'neet', successRate: '80-85%', avgSalary: '₹4-9 LPA' },
+                    { id: 'bsc_bio', name: 'Bachelor of Science (B.Sc) - Biology', desc: 'Provides a foundation in biological sciences. Good for lab work, research, or further studies.', exam: 'cucet', successRate: '60-70%', avgSalary: '₹3-6 LPA' }
+                ],
+                'commerce': [
+                    { id: 'bcom', name: 'Bachelor of Commerce (B.Com)', desc: 'A foundational degree in commerce, covering accounting, finance, and business.', exam: 'cucet', successRate: '75-85%', avgSalary: '₹3.5-7 LPA' },
+                    { id: 'bba', name: 'Bachelor of Business Administration (BBA)', desc: 'Focuses on management and business principles. Ideal for those aiming for management roles.', exam: 'cucet', successRate: '80-90%', avgSalary: '₹4-10 LPA' },
+                    { id: 'llb', name: 'Bachelor of Laws (LLB)', desc: 'A professional degree in law. Can be pursued after graduation or as an integrated course.', exam: 'clat', successRate: '70-80%', avgSalary: '₹4-15+ LPA' }
+                ],
+                'humanities': [
+                    { id: 'ba', name: 'Bachelor of Arts (B.A.)', desc: 'A broad degree that allows specialization in subjects like History, Political Science, Sociology, and Literature.', exam: 'cucet', successRate: '60-75%', avgSalary: '₹3-6 LPA' },
+                    { id: 'bhm', name: 'Bachelor of Hotel Management (BHM)', desc: 'A professional degree for the hospitality and tourism sector, focusing on management and operations.', exam: 'cucet', successRate: '80-90%', avgSalary: '₹3.5-7 LPA' },
+                    { id: 'llb', name: 'Bachelor of Laws (LLB)', desc: 'A professional degree in law. Can be pursued after graduation or as an integrated course.', exam: 'clat', successRate: '70-80%', avgSalary: '₹4-15+ LPA' }
+                ]
+            };
+
+            const allColleges = {
+                // College tiers based on cutoffs/percentile
+                'jee': {
+                    'high': ['IIT Delhi', 'IIT Bombay', 'IIT Madras', 'IIT Kanpur', 'IIT Kharagpur'], // > 98 percentile
+                    'medium': ['NIT Trichy', 'NIT Rourkela', 'BITS Pilani', 'DTU', 'NSUT', 'IIIT Hyderabad'], // 90-98 percentile
+                    'low': ['NIT Srinagar', 'IIT Jammu', 'IIIT Jammu', 'SMVDU Katra', 'GCET Jammu', 'Manipal Institute of Technology', 'VIT Vellore'], // 70-90 percentile
+                    'very_low': ['IUST Awantipora', 'MIET Jammu', 'LPU Jalandhar', 'Chandigarh University'] // < 70 percentile
+                },
+                'neet': {
+                    'high': ['AIIMS Delhi', 'Maulana Azad Medical College Delhi', 'JIPMER Puducherry', 'Lady Hardinge Medical College'], // > 650 marks
+                    'medium': ['Government Medical College Jammu', 'Government Medical College Srinagar', 'Grant Medical College Mumbai', 'KGMU Lucknow'], // 500-650 marks
+                    'low': ['ASCOMS Jammu', 'SKIMS Srinagar', 'Manipal Academy of Higher Education', 'Christian Medical College Vellore'], // 300-500 marks
+                    'very_low': ['Himalayan Institute of Medical Sciences Dehradun', 'JSS Medical College Mysore'] // < 300 marks
+                },
+                'cucet': {
+                    'high': ['Delhi University', 'Jawaharlal Nehru University', 'Banaras Hindu University', 'University of Hyderabad', 'Jamia Millia Islamia'],
+                    'medium': ['Aligarh Muslim University', 'Puducherry University', 'BHU Varanasi', 'University of Allahabad'],
+                    'low': ['Amity University', 'Sharda University', 'Lovely Professional University'],
+                    'very_low': ['Galgotias University', 'Jagannath University Jaipur', 'NIIT University Neemrana', 'Central University of Jammu', 'Cluster University of Jammu', 'University of Jammu', 'IUST Awantipora']
+                },
+                'clat': {
+                    'high': ['National Law School of India University, Bangalore', 'NLSAR University of Law, Hyderabad', 'NUJS Kolkata'],
+                    'medium': ['Gujarat National Law University, Gandhinagar', 'Symbiosis Law School, Pune', 'NLU Jodhpur'],
+                    'low': ['Amity Law School', 'Christ University', 'Jindal Global Law School'],
+                    'very_low': ['KIIT School of Law', 'Alliance School of Law', 'University of Jammu Law School']
+                },
+                'generic': {
+                    'high': ['Lady Shri Ram College Delhi', 'St. Stephen\'s College Delhi', 'Shri Ram College of Commerce Delhi', 'Loyola College Chennai'],
+                    'medium': ['Christ University Bangalore', 'Symbiosis Pune', 'Narsee Monjee Mumbai', 'Hansraj College Delhi'],
+                    'low': ['Amity University', 'Lovely Professional University', 'Chandigarh University'],
+                    'very_low': ['Fergusson College Pune', 'Indraprastha College for Women Delhi']
+                }
+            };
+            
+            // Function to show a custom alert box
+            function showCustomAlert(message) {
+                customAlertMessage.textContent = message;
+                customAlert.classList.add('visible');
+                setTimeout(() => {
+                    customAlert.classList.remove('visible');
+                }, 3000);
+            }
+
+            // Handles starting the quiz
+            function startQuiz() {
+                landingPage.classList.add('hidden');
+                quizPage.classList.remove('hidden');
+                quizPage.classList.add('flex', 'flex-col', 'items-center', 'justify-center');
+                currentQuestionIndex = 0;
+                Object.keys(skillScores).forEach(key => skillScores[key] = 0);
+                showQuestion();
+            }
+
+            // Renders the current quiz question and options
+            function showQuestion() {
+                if (currentQuestionIndex < questions.length) {
+                    const question = questions[currentQuestionIndex];
+                    questionText.textContent = question.text;
+                    document.getElementById('quiz-title').textContent = `Question #${currentQuestionIndex + 1}`;
+                    optionsContainer.innerHTML = '';
+                    optionsContainer.classList.add('fadeIn');
+
+                    question.options.forEach((option, index) => {
+                        const button = document.createElement('button');
+                        button.textContent = option;
+                        button.classList.add('option-btn', 'block', 'w-full');
+                        button.onclick = () => handleAnswer(index, question.skill, question.correct);
+                        optionsContainer.appendChild(button);
+                    });
+
+                    const progress = ((currentQuestionIndex) / questions.length) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    questionCounter.textContent = `${currentQuestionIndex} of ${questions.length} questions answered`;
+                } else {
+                    showSkillResultsPage();
+                }
+            }
+
+            // Handles user's answer and updates skill scores
+            function handleAnswer(selectedIndex, skill, correctIndex) {
+                if (selectedIndex === correctIndex) {
+                    skillScores[skill]++;
+                }
+                currentQuestionIndex++;
+                showQuestion();
+            }
+
+            // Displays the results of the skill-based quiz
+            function showSkillResultsPage() {
+                quizPage.classList.add('hidden');
+                skillResultsPage.classList.remove('hidden');
+                
+                const skillList = document.getElementById('skill-list');
+                skillList.innerHTML = '';
+                
+                // Calculate max scores for each skill
+                questions.forEach(q => {
+                    if (maxSkillScores[q.skill] === undefined) {
+                        maxSkillScores[q.skill] = 0;
+                    }
+                    maxSkillScores[q.skill]++;
+                });
+
+                // Display skill bars
+                for (const skill in skillScores) {
+                    const skillName = skill.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    const score = skillScores[skill];
+                    const maxScore = maxSkillScores[skill] || 1;
+                    const percentage = (score / maxScore) * 100;
+
+                    const div = document.createElement('div');
+                    div.classList.add('text-left');
+                    div.innerHTML = `
+                        <p class="font-medium text-gray-700">${skillName} <span class="float-right">${score}/${maxScore}</span></p>
+                        <div class="skill-bar mt-1">
+                            <div class="skill-bar-fill" style="width: ${percentage}%;"></div>
+                        </div>
+                    `;
+                    skillList.appendChild(div);
+                }
+                
+                continueToMarksBtn.addEventListener('click', showMarksAndExamInput);
+            }
+
+            // Shows the form for academic and exam details
+            function showMarksAndExamInput() {
+                skillResultsPage.classList.add('hidden');
+                marksPage.classList.remove('hidden');
+
+                streamSelect.addEventListener('change', () => {
+                    const stream = streamSelect.value;
+                    marksInputContainer.innerHTML = '';
+                    academicMarks = {};
+                    currentStream = stream;
+                    let subjects = ['English']; 
+
+                    if (stream === 'pcm') {
+                        subjects = ['Physics', 'Chemistry', 'Maths', 'English', 'Other'];
+                    } else if (stream === 'pcb') {
+                        subjects = ['Physics', 'Chemistry', 'Biology', 'English', 'Other'];
+                    } else if (stream === 'commerce') {
+                        subjects = ['Accounts', 'Economics', 'Business Studies', 'English', 'Other'];
+                    } else if (stream === 'humanities') {
+                        subjects = ['History', 'Political Science', 'Sociology', 'English', 'Other'];
+                    }
+
+                    subjects.forEach(subject => {
+                        const div = document.createElement('div');
+                        div.classList.add('relative', 'group');
+                        div.innerHTML = `
+                            <label for="${subject.toLowerCase()}-marks" class="block text-gray-700 font-medium mb-2">${subject} Marks (out of 100)</label>
+                            <input type="number" id="${subject.toLowerCase()}-marks" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" min="0" max="100" placeholder="Enter marks">
+                        `;
+                        marksInputContainer.appendChild(div);
+                    });
+                });
+
+                examSelect.addEventListener('change', (e) => {
+                    if (e.target.value === 'yes') {
+                        examDetailsContainer.classList.remove('hidden');
+                    } else {
+                        examDetailsContainer.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Handles submission of academic and exam details
+            submitMarksBtn.addEventListener('click', () => {
+                const stream = streamSelect.value;
+                if (!stream) {
+                    showCustomAlert('Please select your stream.');
+                    return;
+                }
+
+                const inputs = marksInputContainer.querySelectorAll('input');
+                let allMarksEntered = true;
+                inputs.forEach(input => {
+                    if (input.value === '' || parseInt(input.value) > 100 || parseInt(input.value) < 0) {
+                        allMarksEntered = false;
+                    }
+                    academicMarks[input.id.replace('-marks', '')] = parseInt(input.value);
+                });
+
+                if (!allMarksEntered) {
+                    showCustomAlert('Please enter all your marks correctly.');
+                    return;
+                }
+
+                if (examSelect.value === 'yes') {
+                    const examName = document.getElementById('exam-name').value;
+                    const score = document.getElementById('exam-score').value;
+                    if (examName && score) {
+                        competitiveExam = { name: examName, score: parseFloat(score) };
+                    } else {
+                        showCustomAlert('Please enter both the exam name and score.');
+                        return;
+                    }
+                } else {
+                    // Set competitive exam to null if no exam was selected
+                    competitiveExam = null;
+                }
+
+                showCourseRecommendations(stream);
+            });
+
+            // Displays a list of courses based on the user's stream
+            function showCourseRecommendations(stream) {
+                marksPage.classList.add('hidden');
+                coursePage.classList.remove('hidden');
+                
+                const courseList = document.getElementById('course-list');
+                courseList.innerHTML = '';
+                
+                courses[stream].forEach(course => {
+                    const card = document.createElement('div');
+                    card.classList.add('bg-gray-50', 'rounded-xl', 'p-6', 'shadow-md', 'flex', 'flex-col', 'items-start', 'text-left');
+                    card.innerHTML = `
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">${course.name}</h4>
+                        <p class="text-sm text-gray-600 mb-4">${course.desc}</p>
+                        <div class="space-y-2 text-sm text-gray-600 w-full mb-4">
+                            <div class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-green-500">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p><span class="font-bold">Success Rate:</span> ${course.successRate}</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-purple-500">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 8.25V5.25A2.25 2.25 0 0012.75 3h-5.25A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h5.25m-2.25-10.5H18m-2.25 4.5l2.25-2.25m0 0l-2.25-2.25m2.25 2.25H21" />
+                                </svg>
+                                <p><span class="font-bold">Avg. Salary:</span> ${course.avgSalary}</p>
+                            </div>
+                        </div>
+                        <button class="bg-purple-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-purple-700 transform hover:scale-105 transition duration-300 mt-auto" data-course-id="${course.id}">
+                            View Colleges
+                        </button>
+                    `;
+                    card.querySelector('button').addEventListener('click', () => showCollegeRecommendations(course.id, course.exam));
+                    courseList.appendChild(card);
+                });
+            }
+
+            // Displays college recommendations based on chosen course and exam score
+            function showCollegeRecommendations(courseId, examName) {
+                coursePage.classList.add('hidden');
+                resultsPage.classList.remove('hidden');
+
+                const collegesJKList = document.getElementById('colleges-jk');
+                const collegesOtherList = document.getElementById('colleges-other');
+                collegesJKList.innerHTML = '';
+                collegesOtherList.innerHTML = '';
+
+                let recommendedColleges = [];
+                const examScore = competitiveExam?.score || 0;
+
+                // Logic to select college tier based on percentile
+                if (examName === 'jee') {
+                    if (examScore >= 98) {
+                        recommendedColleges = allColleges.jee.high;
+                    } else if (examScore >= 90) {
+                        recommendedColleges = allColleges.jee.medium;
+                    } else if (examScore >= 70) {
+                        recommendedColleges = allColleges.jee.low;
+                    } else {
+                        recommendedColleges = allColleges.jee.very_low;
+                    }
+                } else if (examName === 'neet') {
+                    if (examScore >= 650) {
+                        recommendedColleges = allColleges.neet.high;
+                    } else if (examScore >= 500) {
+                        recommendedColleges = allColleges.neet.medium;
+                    } else if (examScore >= 300) {
+                        recommendedColleges = allColleges.neet.low;
+                    } else {
+                        recommendedColleges = allColleges.neet.very_low;
+                    }
+                } else if (examName === 'clat') {
+                    if (examScore >= 90) {
+                        recommendedColleges = allColleges.clat.high;
+                    } else if (examScore >= 75) {
+                        recommendedColleges = allColleges.clat.medium;
+                    } else if (examScore >= 50) {
+                        recommendedColleges = allColleges.clat.low;
+                    } else {
+                        recommendedColleges = allColleges.clat.very_low;
+                    }
+                } else if (examName === 'cucet') {
+                    if (examScore >= 95) {
+                        recommendedColleges = allColleges.cucet.high;
+                    } else if (examScore >= 80) {
+                        recommendedColleges = allColleges.cucet.medium;
+                    } else if (examScore >= 60) {
+                        recommendedColleges = allColleges.cucet.low;
+                    } else {
+                        recommendedColleges = allColleges.cucet.very_low;
+                    }
+                } else {
+                    // For general stream, use a generic score range
+                    const totalMarks = Object.values(academicMarks).reduce((sum, current) => sum + current, 0);
+                    const avgMarks = totalMarks / (Object.keys(academicMarks).length * 100) * 100;
+                    if (avgMarks >= 90) {
+                        recommendedColleges = allColleges.generic.high;
+                    } else if (avgMarks >= 75) {
+                        recommendedColleges = allColleges.generic.medium;
+                    } else if (avgMarks >= 50) {
+                        recommendedColleges = allColleges.generic.low;
+                    } else {
+                        recommendedColleges = allColleges.generic.very_low;
+                    }
+                }
+
+                // Filter colleges for J&K and other states
+                const jkColleges = ['IIT Jammu', 'NIT Srinagar', 'SMVDU Katra', 'GCET Jammu', 'IUST Awantipora', 'MIET Jammu', 'Government Medical College Jammu', 'Government Medical College Srinagar', 'ASCOMS Jammu', 'SKIMS Srinagar', 'University of Jammu', 'Central University of Jammu', 'Cluster University of Jammu', 'University of Jammu Law School'];
+                
+                const jkRecommendations = recommendedColleges.filter(college => jkColleges.includes(college));
+                const otherRecommendations = recommendedColleges.filter(college => !jkColleges.includes(college));
+
+                // Render colleges for J&K
+                if (jkRecommendations.length > 0) {
+                    jkRecommendations.forEach(college => {
+                        const li = document.createElement('li');
+                        li.textContent = college;
+                        li.classList.add('text-gray-700', 'font-medium', 'bg-gray-100', 'p-3', 'rounded-lg');
+                        collegesJKList.appendChild(li);
+                    });
+                } else {
+                    collegesJKList.innerHTML = `<li class="text-gray-500 italic">No colleges found in Jammu and Kashmir for your percentile.</li>`;
+                }
+
+                // Render colleges for other states
+                if (otherRecommendations.length > 0) {
+                    otherRecommendations.forEach(college => {
+                        const li = document.createElement('li');
+                        li.textContent = college;
+                        li.classList.add('text-gray-700', 'font-medium', 'bg-gray-100', 'p-3', 'rounded-lg');
+                        collegesOtherList.appendChild(li);
+                    });
+                } else {
+                    collegesOtherList.innerHTML = `<li class="text-gray-500 italic">No colleges found in other states for your percentile.</li>`;
+                }
+            }
+
+            // Navigation event listeners
+            startQuizBtn.addEventListener('click', startQuiz);
+            backToCoursesBtn.addEventListener('click', () => {
+                resultsPage.classList.add('hidden');
+                coursePage.classList.remove('hidden');
+            });
+            restartQuizBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    location.reload();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>College Dashboard — JK Study Cities</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background-color: #f9fafb; color: #1f2937; min-height: 100vh; }
+
+  /* Sub-tabs */
+  .sub-tab-container { display: flex; gap: 12px; max-width: 95%; margin-bottom: 16px; flex-wrap: wrap; }
+  .sub-tab { flex: 1 1 auto; text-align: center; padding: 10px 16px; border-radius: 12px; border: 1px solid #ccc; white-space: nowrap; cursor: pointer; }
+  .sub-tab.active { background-color: #000; color: #fff; border-color: #000; }
+
+  /* Tab content */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Skill bars */
+  .skill-bar { height: 10px; background: #eef2ff; border-radius: 9999px; overflow: hidden; }
+  .skill-fill { height: 100%; background: #306DA7; border-radius: 9999px; transition: width .6s ease; }
+
+  /* Gov Schemes Card */
+  .gov-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 16px; position: relative; width: 45%; margin-bottom: 20px; display: inline-block; vertical-align: top; margin-right: 10px; }
+  .gov-tag { position: absolute; top: 12px; right: 12px; background-color: #d1fae5; color: #016630; padding: 3px 6px; font-size: 12px; font-weight: 600; border-radius: 6px; }
+  .gov-name { font-size: 18px; font-weight: bold; color: #101828; margin-bottom: 8px; }
+  .gov-row { display: flex; justify-content: space-between; padding: 3px 0; color: #101828; font-size: 13px; }
+  .gov-footer { margin-top: 12px; border-top: 1px solid #e5e7eb; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .learn-more { background-color: #2563eb; color: #fff; padding: 5px 10px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 13px; }
+
+  /* Scholarship Section */
+  .scholarship-container { display: flex; gap: 16px; flex-wrap: wrap; }
+  .sch-filter { min-width: 200px; margin-bottom: 12px; }
+  .sch-card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 12px; width: 45%; }
+  .sch-name { font-weight: bold; font-size: 16px; color: #101828; margin-bottom: 4px; }
+  .sch-detail { font-size: 14px; color: #374151; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ✅ Updated Header -->
+<header class="bg-white shadow">
+  <div class="flex items-center justify-between px-4 py-2">
+    
+    <!-- Left Logo -->
+    <div class="flex items-center gap-2">
+      <button class="p-2 rounded-md bg-violet-600 text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <span class="text-lg font-bold text-teal-700">TeacherGuided</span>
+    </div>
+
+    <!-- Center Search -->
+    <div class="flex-1 px-4">
+      <input type="text" placeholder="Search students by name or class..."
+             class="w-full border rounded-md px-3 py-2 text-sm"/>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-2">
+      <input type="text" placeholder="Email"
+             class="border rounded-md px-3 py-1 text-sm"/>
+      <input type="password" placeholder="Password"
+             class="border rounded-md px-3 py-1 text-sm"/>
+      <button class="border px-3 py-1 rounded-md hover:bg-gray-100">Sign Out</button>
+      <span class="text-sm text-gray-500">Logged in as demo@teacher.com</span>
+    </div>
+  </div>
+
+
+</header>
+
+<!-- ✅ Dashboard Section -->
+<section id="dashboard" class="py-12">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold mb-4">Opportunities</h2>
+      <p class="text-gray-600 max-w-2xl mx-auto">Explore colleges, exams and study cities focused on Jammu & Kashmir students.</p>
+    </div>
+
+    <!-- Sub-Tabs -->
+    <div class="sub-tab-container">
+      <button class="sub-tab active" data-tab="cities">Study Cities</button>
+      <button class="sub-tab" data-tab="govschemes">Gov Schemes</button>
+      <button class="sub-tab" data-tab="scholarship">Scholarship</button>
+      <button class="sub-tab" data-tab="exams">Exams</button>
+      <button class="sub-tab" data-tab="abroad">Study Abroad</button>
+    </div>
+
+    <!-- Study Cities -->
+    <div id="cities" class="tab-content active space-y-6">
+      <h3 class="text-xl font-bold">Study Cities — Jammu & Kashmir</h3>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="city-list"></div>
+    </div>
+
+    <!-- Gov Schemes -->
+    <div id="govschemes" class="tab-content space-y-6">
+      <h3 class="text-xl font-bold mb-4">Government Schemes</h3>
+      <div id="gov-cards-container"></div>
+    </div>
+
+    <!-- Scholarship -->
+    <div id="scholarship" class="tab-content space-y-6">
+      <h3 class="text-xl font-bold mb-4">Scholarships</h3>
+      <div class="scholarship-container">
+        <div class="sch-card">
+          <div class="sch-name">College Merit Scholarship</div>
+          <div class="sch-detail">Available for Engineering & Science students</div>
+          <div class="sch-detail">Full tuition coverage</div>
+        </div>
+        <div class="sch-card">
+          <div class="sch-name">Arts Excellence Scholarship</div>
+          <div class="sch-detail">Available for Humanities students</div>
+          <div class="sch-detail">50% tuition coverage</div>
+        </div>
+        <div class="sch-card">
+          <div class="sch-name">Sports Achievement Scholarship</div>
+          <div class="sch-detail">Applicable for all sports categories</div>
+          <div class="sch-detail">25%-100% tuition coverage</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exams -->
+    <div id="exams" class="tab-content space-y-6">
+      <h3 class="text-xl font-bold">Top Entrance Exams in India</h3>
+      <div class="grid md:grid-cols-2 gap-6" id="exam-list"></div>
+    </div>
+
+    <!-- Study Abroad -->
+    <div id="abroad" class="tab-content space-y-6">
+      <h3 class="text-xl font-bold">Study Abroad Opportunities</h3>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded shadow">
+          <h4 class="font-bold mb-4">Popular Destinations</h4>
+          <ul class="space-y-2">
+            <li>USA</li>
+            <li>Canada</li>
+            <li>UK</li>
+            <li>Australia</li>
+            <li>Germany</li>
+          </ul>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+          <h4 class="font-bold mb-4">Scholarship Programs</h4>
+          <ul class="space-y-2">
+            <li>Fulbright Scholarship - USA</li>
+            <li>Chevening Scholarship - UK</li>
+            <li>DAAD Scholarship - Germany</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  // Sub-tabs
+  document.querySelectorAll('.sub-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      if(document.getElementById(tab)) document.getElementById(tab).classList.add('active');
+    });
+  });
+
+  // Study Cities
+  const jkCities = [
+    {name:'Srinagar',region:'Kashmir Division',prominent:[{field:'IT & Software',percent:65},{field:'Tourism & Hospitality',percent:45},{field:'Education & Research',percent:30}],notes:'IT growth in tech parks; seasonal tourism-related jobs.'},
+    {name:'Jammu',region:'Jammu Division',prominent:[{field:'Sales & Retail',percent:58},{field:'Finance & Banking',percent:50},{field:'Administration & Public Services',percent:40}],notes:'Strong administrative centres and regional commerce.'},
+    {name:'Anantnag',region:'Kashmir Division',prominent:[{field:'Agriculture & Agro-processing',percent:55},{field:'Logistics & Supply Chain',percent:38},{field:'Small-scale Manufacturing & Shops',percent:35}],notes:'Agriculture and local trade form employment backbone.'},
+    {name:'Baramulla',region:'Kashmir Division',prominent:[{field:'Logistics & Transport',percent:50},{field:'Retail & Markets',percent:47},{field:'Education & Services',percent:33}],notes:'Important transit town with active trade routes.'},
+    {name:'Pulwama',region:'Kashmir Division',prominent:[{field:'Horticulture & Food Processing',percent:62},{field:'Shops & Local Commerce',percent:40},{field:'IT (growing)',percent:25}],notes:'Horticulture (saffron/apple) and allied industries.'},
+    {name:'Shopian',region:'Kashmir Division',prominent:[{field:'Apple & Orchard Economy',percent:70},{field:'Local Trade',percent:42},{field:'Services & Small Business',percent:30}],notes:'Apple orchards dominate local employment.'}
+  ];
+  const cityList = document.getElementById('city-list');
+  jkCities.forEach(city=>{
+    const fieldsHtml = city.prominent.map(p=>`<div class="mb-3">
+      <div class="flex justify-between items-center text-sm mb-1">
+        <div class="font-medium">${p.field}</div>
+        <div class="text-xs text-gray-600">${p.percent}%</div>
+      </div>
+      <div class="skill-bar"><div class="skill-fill" style="width:${p.percent}%;"></div></div>
+    </div>`).join('');
+    cityList.innerHTML += `<article class="bg-white p-6 rounded shadow">
+      <div class="flex justify-between items-start gap-4 mb-3">
+        <div><h4 class="font-bold text-xl" style="color:#101828;">${city.name}</h4>
+        <p class="text-sm text-gray-600">${city.region}</p></div>
+        <div class="text-right"><span class="inline-block bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-medium">J&K</span></div>
+      </div>${fieldsHtml}
+      <p class="text-xs text-gray-500 italic">${city.notes}</p>
+    </article>`;
+  });
+
+  // Exams
+  const exams = [
+    {name:'JEE Main', subjects:'Engineering', date:'April 2024', open:true},
+    {name:'NEET', subjects:'Medical', date:'May 2024', open:true},
+    {name:'CAT', subjects:'Management', date:'Nov 2024', open:false},
+    {name:'GATE', subjects:'Engineering', date:'Feb 2024', open:true},
+    {name:'UPSC', subjects:'Civil Services', date:'May 2024', open:false}
+  ];
+  const examList = document.getElementById('exam-list');
+  exams.forEach(ex=>{
+    examList.innerHTML += `<div class="bg-white p-6 rounded shadow">
+      <div class="flex justify-between items-center mb-2">
+        <h4 class="font-bold">${ex.name}</h4>
+        <span class="${ex.open?'bg-green-100 text-green-800':'bg-red-100 text-red-800'} px-2 py-1 rounded">${ex.open?'Open':'Closed'}</span>
+      </div>
+      <p class="text-sm">Subjects: ${ex.subjects}</p>
+      <p class="text-sm">Date: ${ex.date}</p>
+    </div>`;
+  });
+
+  // Gov Schemes
+  const govSchemes = [
+    {name:'Digital India',funding:'5000 Cr',beneficiary:'IT Sector, HR',deadline:'2027',impact:'Improves Digital Literacy'},
+    {name:'Skill India',funding:'3000 Cr',beneficiary:'Marketing and Advertisement',deadline:'2025',impact:'Employment Generation'},
+    {name:'Start-Up India',funding:'4000 Cr',beneficiary:'Entrepreneurs',deadline:'2026',impact:'Business Growth'},
+    {name:'Smart Cities',funding:'6000 Cr',beneficiary:'Legal & Compliance',deadline:'2028',impact:'Infrastructure Development'},
+    {name:'Atal Pension Yojana',funding:'2000 Cr',beneficiary:'Logistics and Transportation',deadline:'2030',impact:'Financial Security'}
+  ];
+  const govContainer = document.getElementById('gov-cards-container');
+  govSchemes.forEach(scheme=>{
+    govContainer.innerHTML += `<div class="gov-card">
+      <div class="gov-tag">Scheme Info</div>
+      <div class="gov-name">${scheme.name}</div>
+      <div class="gov-row"><span>Funding:</span><span>${scheme.funding}</span></div>
+      <div class="gov-row"><span>Beneficiary:</span><span>${scheme.beneficiary}</span></div>
+      <div class="gov-row"><span>Deadline:</span><span>${scheme.deadline}</span></div>
+      <div class="gov-footer">
+        <span>Impact: ${scheme.impact}</span>
+        <a href="#" class="learn-more">Learn More</a>
+      </div>
+    </div>`;
+  });
+
+  // Animate bars
+  window.requestAnimationFrame(()=>{
+    document.querySelectorAll('.skill-fill').forEach(el=>{
+      const w = el.style.width;
+      el.style.width='0%';
+      setTimeout(()=>el.style.width=w,80);
+    });
+  });
+</script>
+
+</body>
+</html>

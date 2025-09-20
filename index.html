@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeacherGuided — Career Advisor (Desktop)</title>
+    <meta name="description" content="Desktop career guidance platform for teachers to assess students and provide career counseling recommendations">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <!-- Main Header with Authentication and Search -->
+    <header class="site-header">
+        <div class="header-left">
+            <!-- Logo placeholder - can be replaced with actual logo -->
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" rx="8" fill="#4F46E5"/>
+                    <path d="M8 12h16v2H8v-2zm0 4h16v2H8v-2zm0 4h12v2H8v-2z" fill="white"/>
+                </svg>
+            </div>
+            <h1>TeacherGuided</h1>
+        </div>
+        
+        <div class="header-center">
+            <div class="search-container">
+                <label for="student-search" class="sr-only">Search students</label>
+                <input type="search" id="student-search" placeholder="Search students by name or class..." autocomplete="off">
+            </div>
+        </div>
+        
+        <div class="header-right">
+            <div class="auth-area">
+                <div class="auth-inputs">
+                    <label for="teacher-email" class="sr-only">Teacher Email</label>
+                    <input type="email" id="teacher-email" placeholder="Email" autocomplete="email">
+                    
+                    <label for="teacher-pass" class="sr-only">Password</label>
+                    <input type="password" id="teacher-pass" placeholder="Password" autocomplete="current-password">
+                </div>
+                <div class="auth-buttons">
+                    <button type="button" id="teacher-signin-btn">Sign In</button>
+                    <button type="button" id="teacher-signout-btn" style="display: none;">Sign Out</button>
+                </div>
+                <span id="auth-status" aria-live="polite"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Primary Navigation -->
+    <nav id="main-nav" class="main-navigation">
+        <ul>
+            <li><a href="#" data-tab="dashboard" class="nav-link active">Dashboard</a></li>
+            <li><a href="#" data-tab="assessments" class="nav-link">Assessments</a></li>
+            <li><a href="#" data-tab="career" class="nav-link">Career Map</a></li>
+            <li><a href="#" data-tab="colleges" class="nav-link">Colleges</a></li>
+            <li><button onclick="window.open('SIH2.html', '_blank')" id = "resbutton"class = "nav-link">Resources</button></li>
+            <li><a href="#" data-tab="reports" class="nav-link">Reports</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Application Layout -->
+    <main class="app-grid container">
+        <!-- Left Sidebar with Students List -->
+        <aside class="sidebar">
+            <section class="students-panel">
+                <header class="panel-header">
+                    <h2>Students</h2>
+                    <div class="panel-actions">
+                        <button type="button" id="add-student-btn" class="btn-primary">Add Student</button>
+                        <button type="button" id="import-csv-btn" class="btn-secondary">Import CSV</button>
+                        <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                    </div>
+                </header>
+                
+                <!-- Student List - Firestore collection: students -->
+                <!-- Expected student document structure: {id, name, class, age, gender, lastAssessed, notes, teacherId} -->
+                <ul id="student-list" class="student-list" role="listbox" aria-label="Student list">
+                    <li class="student-item" data-student-id="1" role="option" tabindex="0">
+                        <div class="student-info">
+                            <h3>Rahul Sharma</h3>
+                            <p>Class 10-A • Age 16</p>
+                            <span class="last-assessed">Last assessed: 2 days ago</span>
+                        </div>
+                    </li>
+                    <li class="student-item" data-student-id="2" role="option" tabindex="0">
+                        <div class="student-info">
+                            <h3>Priya Patel</h3>
+                            <p>Class 11-B • Age 17</p>
+                            <span class="last-assessed">Last assessed: 1 week ago</span>
+                        </div>
+                    </li>
+                    <li class="student-item" data-student-id="3" role="option" tabindex="0">
+                        <div class="student-info">
+                            <h3>Arjun Singh</h3>
+                            <p>Class 12-C • Age 18</p>
+                            <span class="last-assessed">Never assessed</span>
+                        </div>
+                    </li>
+                    <li class="student-item" data-student-id="4" role="option" tabindex="0">
+                        <div class="student-info">
+                            <h3>Sneha Gupta</h3>
+                            <p>Class 10-B • Age 15</p>
+                            <span class="last-assessed">Last assessed: 3 days ago</span>
+                        </div>
+                    </li>
+                    <li class="student-item" data-student-id="5" role="option" tabindex="0">
+                        <div class="student-info">
+                            <h3>Vikram Kumar</h3>
+                            <p>Class 11-A • Age 16</p>
+                            <span class="last-assessed">Last assessed: 5 days ago</span>
+                        </div>
+                    </li>
+                    <li class="student-item" data-student-id="6" role="option" tabindex="0">
+                        <div class="student-info">
+                            <h3>Kavya Reddy</h3>
+                            <p>Class 12-A • Age 17</p>
+                            <span class="last-assessed">Last assessed: 1 day ago</span>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </aside>
+
+        <!-- Main Content Panel with Tabs -->
+        <div class="main-panel">
+            <!-- Dashboard Tab -->
+            <section id="tab-dashboard" class="tab-content active">
+                <header class="tab-header">
+                    <h2>Dashboard Overview</h2>
+                </header>
+                
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <h3>Total Assessed</h3>
+                        <div class="kpi-value" id="total-assessed">142</div>
+                        <span class="kpi-change">+12 this month</span>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Needs Counseling</h3>
+                        <div class="kpi-value" id="needs-counsel">23</div>
+                        <span class="kpi-change urgent">Requires attention</span>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Average Score</h3>
+                        <div class="kpi-value" id="avg-score">76%</div>
+                        <span class="kpi-change">+3% improvement</span>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>Recent Activity</h3>
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Action</th>
+                                <th>Date</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-activity-table">
+                            <!-- Dynamic content populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Assessments Tab -->
+            <section id="tab-assessments" class="tab-content">
+                <header class="tab-header">
+                    <h2>Student Assessments</h2>
+                </header>
+
+                <div class="assessments-layout">
+                    <div class="student-detail-panel">
+                        <div id="student-detail" class="student-detail">
+                            <div class="no-selection">
+                                <p>Select a student from the sidebar to start assessment</p>
+                            </div>
+                            <!-- Content populated when student is selected -->
+                            <div class="student-selected" style="display: none;">
+                                <h3 id="selected-student-name">Student Name</h3>
+                                <div class="student-meta">
+                                    <p><strong>Class:</strong> <span id="selected-student-class"></span></p>
+                                    <p><strong>Age:</strong> <span id="selected-student-age"></span></p>
+                                    <p><strong>Last Assessed:</strong> <span id="selected-student-last-assessed"></span></p>
+                                </div>
+                                <div class="assessment-actions">
+                                  <a href="mycode.html">  <button type="button" id="start-quiz-btn" class="btn-primary">Start Career Quiz</button></a>
+                                    <button type="button" id="view-history-btn" class="btn-secondary">View History</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-area">
+                        <div class="quiz-placeholder">
+                            <p>Quiz will appear here when started</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Career Map Tab -->
+            <section id="tab-career" class="tab-content">
+                <header class="tab-header">
+                    <h2>Career Pathways Map</h2>
+                    <p>Explore different career streams and their pathways</p>
+                </header>
+
+                <div class="career-streams">
+                    <div class="stream-column" data-stream="science">
+                        <h3>Science Stream</h3>
+                        <div class="pathway-cards">
+                            <div class="pathway-card">
+                                <h4>Engineering</h4>
+                                <p><strong>Degrees:</strong> B.Tech, B.E.</p>
+                                <p><strong>Careers:</strong> Software Engineer, Mechanical Engineer</p>
+                                <p><strong>Exams:</strong> JEE Main, JEE Advanced</p>
+                                <p><strong>Next Steps:</strong> Focus on Physics, Chemistry, Math</p>
+                            </div>
+                            <div class="pathway-card">
+                                <h4>Medical</h4>
+                                <p><strong>Degrees:</strong> MBBS, BDS</p>
+                                <p><strong>Careers:</strong> Doctor, Dentist, Researcher</p>
+                                <p><strong>Exams:</strong> NEET</p>
+                                <p><strong>Next Steps:</strong> Strong Biology foundation</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stream-column" data-stream="commerce">
+                        <h3>Commerce Stream</h3>
+                        <div class="pathway-cards">
+                            <div class="pathway-card">
+                                <h4>Business & Finance</h4>
+                                <p><strong>Degrees:</strong> B.Com, BBA, CA</p>
+                                <p><strong>Careers:</strong> Chartered Accountant, Financial Analyst</p>
+                                <p><strong>Exams:</strong> CAT, CA Foundation</p>
+                                <p><strong>Next Steps:</strong> Mathematics and Economics focus</p>
+                            </div>
+                            <div class="pathway-card">
+                                <h4>Management</h4>
+                                <p><strong>Degrees:</strong> BBA, MBA</p>
+                                <p><strong>Careers:</strong> Business Manager, Entrepreneur</p>
+                                <p><strong>Exams:</strong> CAT, XAT</p>
+                                <p><strong>Next Steps:</strong> Leadership skills development</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stream-column" data-stream="arts">
+                        <h3>Arts Stream</h3>
+                        <div class="pathway-cards">
+                            <div class="pathway-card">
+                                <h4>Liberal Arts</h4>
+                                <p><strong>Degrees:</strong> BA, MA</p>
+                                <p><strong>Careers:</strong> Journalist, Teacher, Civil Services</p>
+                                <p><strong>Exams:</strong> UPSC, State PSC</p>
+                                <p><strong>Next Steps:</strong> Strong language and analytical skills</p>
+                            </div>
+                            <div class="pathway-card">
+                                <h4>Creative Arts</h4>
+                                <p><strong>Degrees:</strong> BFA, Design</p>
+                                <p><strong>Careers:</strong> Designer, Artist, Filmmaker</p>
+                                <p><strong>Exams:</strong> NID, NIFT</p>
+                                <p><strong>Next Steps:</strong> Portfolio development</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Colleges Tab -->
+            <section id="tab-colleges" class="tab-content">
+                <header class="tab-header">
+                    <h2>College Database</h2>
+                    <div class="college-filters">
+                        <label for="filter-stream">Filter by Stream:</label>
+                        <select id="filter-stream">
+                            <option value="">All Streams</option>
+                            <option value="engineering">Engineering</option>
+                            <option value="medical">Medical</option>
+                            <option value="commerce">Commerce</option>
+                            <option value="arts">Arts</option>
+                        </select>
+                        
+                        <label for="sort-colleges">Sort by:</label>
+                        <select id="sort-colleges">
+                            <option value="distance">Distance</option>
+                            <option value="rating">Rating</option>
+                            <option value="cutoff">Cutoff Score</option>
+                        </select>
+                    </div>
+                </header>
+
+                <div class="colleges-layout">
+                    <div class="colleges-grid-container">
+                        <!-- Expected college document structure: {id, name, address, courses[], cutoff, rating, facilities[], distance} -->
+                        <div id="college-grid" class="college-grid">
+                            <div class="college-card" data-college-id="1">
+                                <h3>IIT Delhi</h3>
+                                <p class="college-location">New Delhi, Delhi</p>
+                                <p class="courses-offered">Engineering, Technology</p>
+                                <div class="college-stats">
+                                    <span class="cutoff">Cutoff: 99.5%</span>
+                                    <span class="rating">Rating: 4.8/5</span>
+                                </div>
+                                <div class="facilities">
+                                    <span class="facility-icon" title="Hostel">🏠</span>
+                                    <span class="facility-icon" title="Library">📚</span>
+                                    <span class="facility-icon" title="Labs">🔬</span>
+                                    <span class="facility-icon" title="Sports">⚽</span>
+                                </div>
+                                <button type="button" class="college-details-btn" data-college-id="1">View Details</button>
+                            </div>
+
+                            <div class="college-card" data-college-id="2">
+                                <h3>AIIMS New Delhi</h3>
+                                <p class="college-location">New Delhi, Delhi</p>
+                                <p class="courses-offered">Medical Sciences</p>
+                                <div class="college-stats">
+                                    <span class="cutoff">Cutoff: 99.8%</span>
+                                    <span class="rating">Rating: 4.9/5</span>
+                                </div>
+                                <div class="facilities">
+                                    <span class="facility-icon" title="Hospital">🏥</span>
+                                    <span class="facility-icon" title="Library">📚</span>
+                                    <span class="facility-icon" title="Research">🔬</span>
+                                </div>
+                                <button type="button" class="college-details-btn" data-college-id="2">View Details</button>
+                            </div>
+
+                            <div class="college-card" data-college-id="3">
+                                <h3>SRCC Delhi</h3>
+                                <p class="college-location">New Delhi, Delhi</p>
+                                <p class="courses-offered">Commerce, Economics</p>
+                                <div class="college-stats">
+                                    <span class="cutoff">Cutoff: 98.5%</span>
+                                    <span class="rating">Rating: 4.7/5</span>
+                                </div>
+                                <div class="facilities">
+                                    <span class="facility-icon" title="Library">📚</span>
+                                    <span class="facility-icon" title="Auditorium">🎭</span>
+                                    <span class="facility-icon" title="Computer Lab">💻</span>
+                                </div>
+                                <button type="button" class="college-details-btn" data-college-id="3">View Details</button>
+                            </div>
+
+                            <div class="college-card" data-college-id="4">
+                                <h3>Hindu College</h3>
+                                <p class="college-location">New Delhi, Delhi</p>
+                                <p class="courses-offered">Arts, Sciences</p>
+                                <div class="college-stats">
+                                    <span class="cutoff">Cutoff: 96%</span>
+                                    <span class="rating">Rating: 4.5/5</span>
+                                </div>
+                                <div class="facilities">
+                                    <span class="facility-icon" title="Library">📚</span>
+                                    <span class="facility-icon" title="Sports">⚽</span>
+                                    <span class="facility-icon" title="Cultural">🎭</span>
+                                </div>
+                                <button type="button" class="college-details-btn" data-college-id="4">View Details</button>
+                            </div>
+
+                            <div class="college-card" data-college-id="5">
+                                <h3>NIT Trichy</h3>
+                                <p class="college-location">Tiruchirappalli, Tamil Nadu</p>
+                                <p class="courses-offered">Engineering, Architecture</p>
+                                <div class="college-stats">
+                                    <span class="cutoff">Cutoff: 97.5%</span>
+                                    <span class="rating">Rating: 4.6/5</span>
+                                </div>
+                                <div class="facilities">
+                                    <span class="facility-icon" title="Hostel">🏠</span>
+                                    <span class="facility-icon" title="Labs">🔬</span>
+                                    <span class="facility-icon" title="Placement Cell">💼</span>
+                                </div>
+                                <button type="button" class="college-details-btn" data-college-id="5">View Details</button>
+                            </div>
+
+                            <div class="college-card" data-college-id="6">
+                                <h3>Jamia Millia Islamia</h3>
+                                <p class="college-location">New Delhi, Delhi</p>
+                                <p class="courses-offered">Arts, Sciences, Engineering</p>
+                                <div class="college-stats">
+                                    <span class="cutoff">Cutoff: 94%</span>
+                                    <span class="rating">Rating: 4.4/5</span>
+                                </div>
+                                <div class="facilities">
+                                    <span class="facility-icon" title="Library">📚</span>
+                                    <span class="facility-icon" title="Hostel">🏠</span>
+                                    <span class="facility-icon" title="Sports">⚽</span>
+                                </div>
+                                <button type="button" class="college-details-btn" data-college-id="6">View Details</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="map-container">
+                        <!-- Map integration placeholder -->
+                        <div id="map-placeholder" class="map-placeholder">
+                            <h4>College Locations</h4>
+                            <p>Map will appear here with Google Maps / embedded map integration</p>
+                            <!-- TODO: Integrate with Google Maps API or similar mapping service -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+
+            <!-- Reports Tab -->
+            <section id="tab-reports" class="tab-content">
+                <header class="tab-header">
+                    <h2>Reports & Analytics</h2>
+                </header>
+
+                <div class="reports-actions">
+                    <button type="button" id="export-student-data" class="btn-primary">Export Student Data</button>
+                    <button type="button" id="export-assessments" class="btn-secondary">Export Assessments</button>
+                    <button type="button" id="generate-class-report" class="btn-secondary">Generate Class Report</button>
+                </div>
+
+                <div class="sync-status">
+                    <h3>Data Sync Status</h3>
+                    <table class="sync-table">
+                        <thead>
+                            <tr>
+                                <th>Data Type</th>
+                                <th>Last Sync</th>
+                                <th>Status</th>
+                                <th>Records</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Students</td>
+                                <td>5 minutes ago</td>
+                                <td class="status-success">✓ Synced</td>
+                                <td>142</td>
+                            </tr>
+                            <tr>
+                                <td>Assessments</td>
+                                <td>2 minutes ago</td>
+                                <td class="status-success">✓ Synced</td>
+                                <td>89</td>
+                            </tr>
+                            <tr>
+                                <td>Colleges</td>
+                                <td>1 hour ago</td>
+                                <td class="status-warning">⚠ Pending</td>
+                                <td>245</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal: Add/Edit Student -->
+    <div id="student-modal" class="modal" role="dialog" aria-labelledby="student-modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 id="student-modal-title">Add New Student</h3>
+                <button type="button" class="modal-close" aria-label="Close modal">&times;</button>
+            </header>
+            <form id="student-form" class="modal-body">
+                <div class="form-group">
+                    <label for="student-name">Full Name *</label>
+                    <input type="text" id="student-name" name="name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student-class">Class *</label>
+                        <select id="student-class" name="class" required>
+                            <option value="">Select Class</option>
+                            <option value="9">Class 9</option>
+                            <option value="10">Class 10</option>
+                            <option value="11">Class 11</option>
+                            <option value="12">Class 12</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-age">Age *</label>
+                        <input type="number" id="student-age" name="age" min="13" max="20" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-gender">Gender</label>
+                        <select id="student-gender" name="gender">
+                            <option value="">Prefer not to say</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="student-notes">Notes</label>
+                    <textarea id="student-notes" name="notes" rows="3" placeholder="Additional notes about the student..."></textarea>
+                </div>
+            </form>
+            <footer class="modal-footer">
+                <button type="button" class="btn-secondary modal-cancel">Cancel</button>
+                <button type="submit" form="student-form" class="btn-primary">Save Student</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal: Career Assessment Quiz -->
+    <div id="quiz-modal" class="modal" role="dialog" aria-labelledby="quiz-modal-title" aria-hidden="true">
+        <div class="modal-content quiz-modal-content">
+            <header class="modal-header">
+                <h3 id="quiz-modal-title">Career Interest Assessment</h3>
+                <button type="button" class="modal-close" aria-label="Close quiz">&times;</button>
+            </header>
+            <div class="modal-body">
+                <form id="career-quiz-form">
+
+                    <div class="card1">
+  <div class="top">
+    <h1>60-Second Math Sprint</h1>
+    <div class="timer" id="timer">60s</div>
+  </div>
+  <div class="meta">Solve as many as you can. Press <strong>Start</strong> to begin.
+ </div>
+
+  <div class="qbox" id="qbox">Press Start</div>
+
+  <div style="display:flex; gap:10px; align-items:center;">
+    <input class="answer" id="ans" type="number" placeholder="Your answer" disabled />
+    <button id="start">Start</button>
+    <button id="skip" style="background:#ccc;color:#222;" disabled>Skip</button>
+  </div>
+
+  <div class="small">Ops: +, -, ×, ÷ (inti). Skip gives next question without penalty.</div>
+  <div class="score" id="score">Score: 0</div>
+</div>
+
+<div class="wrap">
+  <h1>Memory Pairs — Match the pairs</h1>
+  <div class="grid" id="grid"></div>
+  <div class="controls">
+    <button id="new">New Game</button>
+    <div class="status" id="status">Matches: 0</div>
+    <div class="tims" id="tims">Time: 0s</div>
+  </div>
+</div>
+                    </div>
+
+                </form>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn-secondary modal-cancel">Cancel</button>
+                <button type="submit" form="career-quiz-form" id="submit-quiz-btn" class="btn-primary">Submit Assessment</button>
+            </footer>
+        </div>
+    </div>
+    
+    <!-- Toast Notification Container -->
+    <div id="toast-container" aria-live="polite" class="toast-container"></div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; 2024 TeacherGuided Career Advisor. All rights reserved.</p>
+            <p class="footer-note">Demo uses Firebase — paste config in app.js</p>
+        </div>
+    </footer>
+
+    <!-- 
+    JavaScript Integration Notes:
+    
+    Firebase Collections Structure:
+    - users (teachers): {id, email, name, school, createdAt}
+    - students: {id, name, class, age, gender, notes, teacherId, lastAssessed, createdAt}
+    - assessments: {id, studentId, teacherId, date, responses, result, recommendedStream, createdAt}
+    - colleges: {id, name, address, courses[], cutoff, rating, facilities[], distance, coordinates}
+    
+    Key JavaScript Functions to Implement:
+    - Firebase configuration and initialization
+    - Authentication handlers for teacher login/logout
+    - Student CRUD operations with Firestore
+    - Quiz submission and result calculation
+    - Real-time data synchronization
+    - CSV import functionality
+    - Report generation and export
+    - Modal management and focus trapping
+    - Keyboard navigation support
+    - Toast notifications for user feedback
+    
+    Accessibility Implementation:
+    - Implement focus trap in modals (trap focus within modal when open)
+    - Handle ESC key to close modals
+    - Ensure proper ARIA attributes are dynamically updated
+    - Maintain focus order and keyboard navigation
+    - Screen reader announcements for dynamic content changes
+    
+    Firebase Config Placeholder (to be added in app.js):
+    const firebaseConfig = {
+      // Add your Firebase config here
+      apiKey: "your-api-key",
+      authDomain: "your-project.firebaseapp.com",
+      projectId: "your-project-id",
+      storageBucket: "your-project.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "your-app-id"
+    };
+    --> 
